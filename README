@@ -1,7 +1,8 @@
 Finance::Bank::Wachovia version 0.01
 ==================================
 
-Finance::Bank::Wachovia - access account info from Perl
+NAME
+       Finance::Bank::Wachovia - access account info from Perl
 
        * Account numbers
        * Account names
@@ -12,29 +13,44 @@ Finance::Bank::Wachovia - access account info from Perl
 
 SYNOPSIS
        Since this version uses the website to get account info, it will need
-       the information to login: Customer access number, Pin, and Code word.
-       The "other way" to log in is not currently supported*.
+       the information to login: There are two ways to login via the wachovia
+       website, and depending on which login method you use, that decides
+       which parameters you'll provide to the new() method.  If you use the
+       Customer access number method (left form on the website) then provide
+       "customer_access_number", "pin", and "code_word".  If you use the user
+       id method (right form on the website) then provide "user_id" and "pass-
+       word".
 
          use Finance::Bank::Wachovia;
 
+         # Two different types of login information,
+         # if you login using can/pin/codeword:
          my $wachovia  = Finance::Bank::Wachovia->new(
-               customer_access_number => '123456789',
-               pin     => '1234',
-               code_word       => 'blah'
-         );
+             customer_access_number => '123456789',
+             pin                    => '1234',
+             code_word              => 'blah'
+         ) or die Finance::Bank::Wachovia->ErrStr();
 
-         my @account_numbers           = $wachovia->account_numbers();
-         my @account_names             = $wachovia->account_names();
-         my @account_balances  = $wachovia->account_balanes();
+         # OR if you login using user_id/password:
+         $wachovia = Finance::Bank::Wachovia->new(
+             user_id  => 'foo',
+             password => 'bar'
+         ) or die Finance::Bank::Wachovia->ErrStr();
 
-         my $account = $wachovia->account( $account_numbers[0] );
-         print "Number: ", $account->number, "\n";
-         print "Name: ", $account->name, "\n";
-         print "Type: ", $account->type, "\n";
+         my @account_numbers  = $wachovia->account_numbers();
+         my @account_names    = $wachovia->account_names();
+         my @account_balances = $wachovia->account_balances();
+
+         my $account = $wachovia->account( $account_numbers[0] )
+               or die $wachovia->ErrStr();;
+         print "Number: ",      $account->number, "\n";
+         print "Name: ",        $account->name, "\n";
+         print "Type: ",        $account->type, "\n";
          print "Avail. Bal.: ", $account->available_balance, "\n";
          print "Posted.Bal.: ", $account->posted_balance, "\n";
 
-         my $transactions = $account->transactions;
+         my $transactions = $account->transactions
+               or die $account->ErrStr;
 
          foreach my $t ( @$transactions ){
                print "Date: ",     $t->date,              "\n",
@@ -53,8 +69,10 @@ DESCRIPTION
        was to keep the interface as logical as possible.  The user is com-
        pletely abstracted from how the data is obtained, and to a large degree
        so is the module itself.  In case wachovia ever offers an XML inter-
-       face, or even soap, this should be an easy module to add to, but the
-       interface will not change, so your code won't have too either.
+       face, or soap, or DBI (right) this should be an easy module to add
+       to/modify, but the application interface will not change, so YOUR code
+       won't have to either.
+ 
 
 INSTALLATION
 

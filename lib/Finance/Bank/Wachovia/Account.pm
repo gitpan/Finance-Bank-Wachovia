@@ -1,10 +1,11 @@
 package Finance::Bank::Wachovia::Account;
-use Carp;
+use Finance::Bank::Wachovia::ErrorHandler;
 use strict;
 use warnings;
 
-our $VERSION = '0.1';
- my @attrs;
+our $VERSION = '0.2';
+my @attrs;
+our @ISA = qw/Finance::Bank::Wachovia::ErrorHandler/;
 
 BEGIN{ 
 	@attrs = qw(
@@ -17,7 +18,7 @@ BEGIN{
 		data_obtainer
 	);
 	
-	my $x = 0;
+	my $x = @__SUPER__::ATTRIBUTES;
 	for( @attrs ){
 		eval "sub _$_ { $x }";
 		$x++;
@@ -31,7 +32,7 @@ sub new {
 	foreach my $att ( keys %attrs ){
 		$self->$att( $attrs{$att} );	
 	}
-	carp "Warning: no account number set in Finance::Bank::Account->new"
+	return Finance::Bank::Wachovia::Account->Error("no account number set in Finance::Bank::Wachovia::Account->new")
 		unless $self->number;
 	return $self;
 }
@@ -42,7 +43,7 @@ sub AUTOLOAD {
 	my $self = shift;
 	my $attr = lc $AUTOLOAD;
 	$attr =~ s/.*:://;
-	die "$attr not a valid attribute"
+	return $self->Error( "$attr not a valid attribute" )
 		unless grep /$attr/, @attrs;
 	# get if no args passed
 	return $self->[ &{"_$attr"} ] unless @_;	
@@ -54,7 +55,7 @@ sub AUTOLOAD {
 sub add_transaction {
 	my($self) = shift;
 	foreach my $t ( @_ ){
-		die "Must pass valid Transaction object"
+		return $self->Error( "Must pass valid Transaction object" )
 			unless $t->isa('Finance::Bank::Wachovia::Transaction');
 		push @{ $self->[ _transactions ] }, $t; 
 	}
@@ -68,7 +69,7 @@ sub set_transactions {
 		return $self;	
 	}
 	foreach my $t ( @$transactions ){
-		die "Must pass valid Transaction objects"
+		return $self->Error( "Must pass valid Transaction objects" )
 			unless $t->isa('Finance::Bank::Wachovia::Transaction');
 	}
 	$self->[ _transactions ] = $transactions;
@@ -98,7 +99,7 @@ sub get_transactions {
 	my $transactions = $do->get_account_transactions( $self->number() );
 	foreach ( @$transactions ){
 		my $t = Finance::Bank::Wachovia::Transaction->new( %$_	)
-			or die "Couldn't make transaction object";	
+			or return $self->Error( "Couldn't make transaction object" );	
 		$self->add_transaction( $t );	
 	}
 	return $self->[ _transactions ];
@@ -186,6 +187,6 @@ alias for get_transactions
 
 =head1 SEE ALSO
 
-Finance::Bank::Wachovia  Finance::Bank::Wachovia::Transactions
+L<Finance::Bank::Wachovia>  L<Finance::Bank::Wachovia::Transaction>
 
 =cut

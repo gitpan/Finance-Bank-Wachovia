@@ -1,4 +1,4 @@
-use Test::More tests => 11;
+use Test::More tests => 16;
 use strict;
 
 use_ok('Finance::Bank::Wachovia::DataObtainer::WWW');
@@ -70,3 +70,17 @@ ok( scalar @$trans > 0, "we got some transactions (".scalar(@$trans).")");
 
 ok( $trans->[0]->{date} =~ m|^(\d\d/\d\d/\d{4})$|, "looks like transactions worked ($1)" );
 
+
+
+$do = Finance::Bank::Wachovia::DataObtainer::WWW->new();
+$do->user_id( 'foo' );
+$do->password( 'bar' );
+$do->customer_access_number( '4321' );
+$do->pin('1234');
+$do->code_word('baz');
+
+is( $do->user_id(), 'foo', 'user_id works' );
+is( $do->password(), 'bar', 'password works' );
+is( $do->customer_access_number(), '4321', 'customer_access_number works' );
+is( $do->pin, '1234', 'pin works' );
+is( $do->code_word, 'baz', 'code_word works' );

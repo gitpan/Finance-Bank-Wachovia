@@ -7,13 +7,19 @@ use strict;
 $| = 1;
 
 # parse command line options -- see perldocs for info
-my $opts = {keyfile => '.wachovia'};
+my $opts = {keyfile => $ENV{HOME}.'/.wachovia'};
 for (@ARGV){
 	$opts->{lc($1)} = $2 if /--(\w+)=(.+)/g;	
 	$opts->{lc($1)} = 1 if /^--(\w+)$/g;
 }  
 
 if( $opts->{key} ){
+	eval {
+		require Crypt::CBC;
+		import Crypt::CBC;
+	};
+	if($@){ die "Must have Crypt::CBC and Crypt::DES_PP module installed to use --key feature: $@\n" }
+
 	if( $opts->{can} || $opts->{pin} || $opts->{codeword} ){
 		# if here, then user provided key + some info, so we want to preserve whatever it is they provided
 		# while keeping whatever it is they didn't provide.
@@ -25,6 +31,16 @@ if( $opts->{key} ){
 		$opts->{account} = $copy_of_opts->{account} if $copy_of_opts->{account};
 		save_account_info( $opts );
 	}
+	if( $opts->{userid} || $opts->{password} ){
+		# if here, then user provided key + some info, so we want to preserve whatever it is they provided
+		# while keeping whatever it is they didn't provide.
+		my $copy_of_opts = { %$opts };	
+		get_account_info( $opts ); # modifies $opts
+		$opts->{userid} = $copy_of_opts->{userid} if $copy_of_opts->{userid};
+		$opts->{password} = $copy_of_opts->{password} if $copy_of_opts->{password};
+		$opts->{account} = $copy_of_opts->{account} if $copy_of_opts->{account};
+		save_account_info( $opts );
+	}	
 	else{
 		get_account_info( $opts ); # modifies $opts
 	}
@@ -32,28 +48,32 @@ if( $opts->{key} ){
 else{
 	# if here, then the user must provide all the info them self, and they don't plan on keeping it
 	# in a key-file.
-	unless( $opts->{can} && $opts->{pin} && $opts->{codeword} ){
+	unless( ( $opts->{can} && $opts->{pin} && $opts->{codeword} ) || ( $opts->{userid} && $opts->{password} ) ){
 		print "Need either login info, or file-key to login.  see `perldoc wachovia.pl`\n";	
 		exit(1);
 	}	
 }
 my $x;
-my $wachovia  = Finance::Bank::Wachovia->new(
-	customer_access_number => $opts->{can},
-	pin	=> $opts->{pin},
-	code_word	=> $opts->{codeword}
-) 
-	or die "Could not create wachovia object\n";
+
+my %login_info = $opts->{userid}
+	? ( user_id => $opts->{userid}, password => $opts->{password} )
+	: ( customer_access_number => $opts->{can}, pin => $opts->{pin}, code_word => $opts->{codeword} );
+	
+my $wachovia  = Finance::Bank::Wachovia->new( %login_info ) 
+	or die Finance::Bank::Wachovia->ErrStr;
 
 my $account = $wachovia->account( $opts->{account} )
-	or die "Could not create account object.";
+	or die $wachovia->ErrStr;
 	
-print "Acct Number: ", $account->number, "  Acct Name: ", $account->name, "  Avail. Bal.: ", $account->available_balance, "\n";
+print $account->available_balance, "\n" and exit if $opts->{balance};
+print "Acct Number: ", $account->number, "\n";
+print "Acct Name  : ", $account->name, ($opts->{details}?" ( ".$account->type." )":''), "\n";
+print "Avail. Bal.: ", $account->available_balance, "\n";
 exit unless  $opts->{details};
 print "Posted.Bal.: ", $account->posted_balance, "\n";
 	  
 my $transactions = $account->transactions
-or die "Could not retrieve transactions.";
+	or die $account->ErrStr;
 
 my($date, $desc, $with, $deposit, $bal) = qw/Date Description Withdrawal Deposit Balance/;
 format Transactions = 
@@ -127,8 +147,15 @@ You can provide the login/account number every time you run the command:
 
   wachovia.pl --can=123456789 --pin=1234 --codeword=foo --account=1234567891234
   
+  OR
+  
+  wachovia.pl --userid=foo --password=bar --account=1234567891234
+ 
+NOTE ABOUT LOGINS: you can either use the customer access number method (--can --pin and --codeword) or the user id method ( --userid and --password )
+it depends on how you log into the wachovia website.
+  
 But that's alot to type in every time you want to check your account.  It's easier to provide the login/account info
-and have the program store it in a file ( ".wachovia" by default ).  The file is encrypted (thanks Doug)
+and have the program store it in a file ( "~/.wachovia" by default ).  The file is encrypted (thanks Doug)
 and you use a "key" to decrypt the contents.  The first time you run the command, you have to include all the login/account
 info PLUS a password (key) and optionally a file path to use.
 
@@ -138,7 +165,7 @@ After doing that, you can have the same affect as typing all that in just by typ
 
   wachovia.pl --key=password --file=~/.checking
   
-And if you choose to use the default ".wachovia" file path (best choice for the account you'll check most often) then
+And if you choose to use the default "~/.wachovia" file path (best choice for the account you'll check most often) then
 you can omit the --file argument.
 
   wachovia.pl --key=password
@@ -149,8 +176,7 @@ changed info plus the key and it will update your key-file:
   wachovia.pl --key=password --pin=4321
   
 Now your pin will be updated, all else will remain the untouched.  Remember, the only time you need to provide the --file argument 
-is when you do want to use the default ".wachovia" file path.  Bear in mind that path is relative to your current working directory, 
-so you probably want to execute that from your home directory.
+is when you do want to use the default "~/.wachovia" file path.
 
 =head1 DESCRIPTION
 
@@ -158,39 +184,45 @@ Uses Finance::Bank::Wachovia (which retrieves, parses, and objectifies your acco
 
 =head1 ARGS
 
-=head2 details
+=head2 --balance
+
+Flag that tells program to just print out the available balance and exit. (has newline)
+
+=head2 --details
 
 Flag that tells program to display extra information (last 10 transactions).
 
-=head2 can
+=head2 --can
 
 Your customer access number.
 
-=head2 pin
+=head2 --pin
 
 Your 4-digit PIN.
 
-=head2 codeword
+=head2 --codeword
 
 Your super secret word.
 
-=head2 account
+=head2 --account
 
 This is the account number that you want to retrieve information about.
 
-=head2 key
+=head2 --key
 
 Optional. The password you use if you want to be smart and lazy.  Read SYNOPSIS for details.
 
-=head2 file
+=head2 --file
 
-The file you want to store your login/account info if you are using --key.  It's optional, and ".wachovia" is the default.  Read SYNOPSIS for details.
+The file you want to store your login/account info if you are using --key.  It's optional, and "~/.wachovia" is the default.  Read SYNOPSIS for details.
 
 =head1 THANKS
 
 Larry Wall for Perl.
 
 Doug Feuerbach for so many things, but for this instance of thankfulness: the encryption/decryption routines.
+
+Jason Marcell for his help testing/debugging the user_id/password login method.
 
 =head1 AUTHOR
 

@@ -1,16 +1,20 @@
-bin/wachovia.pl
 Changes
 data/bank_summary.html
 data/bank_transactions.html
-lib/Finance/Bank/Wachovia/Account.pm
-lib/Finance/Bank/Wachovia/DataObtainer/WWW/Parser.pm
-lib/Finance/Bank/Wachovia/DataObtainer/WWW.pm
-lib/Finance/Bank/Wachovia/Transaction.pm
 lib/Finance/Bank/Wachovia.pm
+lib/Finance/Bank/Wachovia/Account.pm
+lib/Finance/Bank/Wachovia/DataObtainer/WWW.pm
+lib/Finance/Bank/Wachovia/DataObtainer/WWW/Parser.pm
+lib/Finance/Bank/Wachovia/ErrorHandler.pm
+lib/Finance/Bank/Wachovia/Transaction.pm
 Makefile.PL
-MANIFEST
+MANIFEST			This list of files
+MANIFEST.SKIP
+META.yml			Module meta-data (added by MakeMaker)
 README
+scripts/wachovia.pl
 t/Account.t
+t/ErrorHandler.t
 t/Parser.t
 t/Transaction.t
 t/Wachovia.t

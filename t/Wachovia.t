@@ -1,5 +1,5 @@
 use strict;
-use Test::More tests => 9;
+use Test::More tests => 14;
 
 use_ok('Finance::Bank::Wachovia');
 
@@ -19,10 +19,22 @@ $detail_data = <F>;
 close F;
 }
 my $wachovia = Finance::Bank::Wachovia->new(
-	customer_access_number => '123456789',
-	pin => '7448',
-	code_word => 'blah'
+	customer_access_number	=> '123456789',
+	pin						=> '1234',
+	code_word				=> 'blah'
 );
+
+my $wachovia2 = Finance::Bank::Wachovia->new(
+	user_id		=> 'foo',
+	password	=> 'bar'
+);
+
+is( $wachovia->customer_access_number, '123456789', 'customer_access_number works' );
+is( $wachovia->pin, '1234', 'pin works' );
+is( $wachovia->code_word, 'blah', 'code_word works' ); 
+is( $wachovia2->user_id, 'foo', 'user_id works' );
+is( $wachovia2->password, 'bar', 'password works' );
+
 my $do = $wachovia->data_obtainer;
 $do->cached_content->{'summary'}				= $summary_data;
 $do->cached_content->{'details'}{$account_num}	= $detail_data;

@@ -2,7 +2,7 @@ package Finance::Bank::Wachovia::DataObtainer::WWW::Parser;
 use strict;
 use warnings;
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
 
 sub get_account_numbers {
 	my $content = $_[-1];

@@ -1,8 +1,11 @@
 package Finance::Bank::Wachovia::Transaction;
+
+use Finance::Bank::Wachovia::ErrorHandler;
 use strict;
 use warnings;
 
-our $VERSION = '0.1';
+our $VERSION = '0.2';
+our @ISA = qw/Finance::Bank::Wachovia::ErrorHandler/;
 my @attrs;
 
 BEGIN{ 
@@ -18,7 +21,7 @@ BEGIN{
 		check_num
 	);
 	
-	my $x = 0;
+	my $x = @__SUPER__::ATTRIBUTES;
 	for( @attrs ){
 		eval "sub _$_ { $x }";
 		$x++;
@@ -108,6 +111,6 @@ In my experience 'action' has always been empty, and seq_no I don't know what it
 
 =head1 SEE ALSO
 
-Finance::Bank::Wachovia  Finance::Bank::Wachovia::Account
+L<Finance::Bank::Wachovia>  L<Finance::Bank::Wachovia::Account>
 
 =cu
