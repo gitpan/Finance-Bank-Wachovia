@@ -1,0 +1,17 @@
+bin/wachovia.pl
+Changes
+data/bank_summary.html
+data/bank_transactions.html
+lib/Finance/Bank/Wachovia/Account.pm
+lib/Finance/Bank/Wachovia/DataObtainer/WWW/Parser.pm
+lib/Finance/Bank/Wachovia/DataObtainer/WWW.pm
+lib/Finance/Bank/Wachovia/Transaction.pm
+lib/Finance/Bank/Wachovia.pm
+Makefile.PL
+MANIFEST
+README
+t/Account.t
+t/Parser.t
+t/Transaction.t
+t/Wachovia.t
+t/WWW.t
