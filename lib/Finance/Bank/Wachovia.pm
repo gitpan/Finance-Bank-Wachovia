@@ -2,12 +2,13 @@ package Finance::Bank::Wachovia;
 
 use Finance::Bank::Wachovia::ErrorHandler;
 use Finance::Bank::Wachovia::Account;
+use Finance::Bank::Wachovia::Credit;
 use Finance::Bank::Wachovia::Transaction;
 use Finance::Bank::Wachovia::DataObtainer::WWW;
 use strict;
 use warnings;
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 my @attrs;
 our @ISA = qw/Finance::Bank::Wachovia::ErrorHandler/;
 
@@ -92,15 +93,24 @@ sub account {
 	return $self->Error("must pass valid account number to account(), got '$account_number'")
 		unless $account_number =~ /^\d+$/;
 	my $do = $self->data_obtainer();
+	my $account;
 	#note: we don't set posted_balance here, since that requires extra
 	# work by the obtainer, we defer the retrieval of that until it's 
 	# needed (asked for via $account->posted_balance)
-	my $account = Finance::Bank::Wachovia::Account->new(
-		number				=> $account_number,
-		data_obtainer		=> $do,
-	);
-	unless( $account ){
-		return $self->Error("Could not create account object");	
+	if( $account_number =~ /\d{16}/ ){ # must be credit?
+			$account = Finance::Bank::Wachovia::Credit->new(
+				number			=> $account_number,
+				data_obtainer	=> $do,
+			)
+			or return Error( "Couldn't create Credit object: ".Finance::Bank::Wachovia::Credit->ErrStr );
+			
+	}
+	else{ # must be checkings or savings?
+			$account = Finance::Bank::Wachovia::Account->new(
+				number			=> $account_number,
+				data_obtainer	=> $do,
+			)
+			or return Error( "Couldn't create Account object: ".Finance::Bank::Wachovia::Account->ErrStr );
 	}
 	$self->accounts->{$account_number} = $account;
 	return $account;
@@ -158,7 +168,8 @@ then provide "user_id" and "password".
   my @account_balances	= $wachovia->account_balances();
 
   my $account = $wachovia->account( $account_numbers[0] )
-  	or die $wachovia->ErrStr();;
+  	or die $wachovia->ErrStr();
+  	
   print "Number: ", $account->number, "\n";
   print "Name: ", $account->name, "\n";
   print "Type: ", $account->type, "\n";
@@ -178,7 +189,7 @@ then provide "user_id" and "password".
   	      "seq_no",     $t->seq_no,            "\n",
   	      "trans_code", $t->trans_code,        "\n",
   	      "check_num",  $t->check_num,         "\n";
-  } 
+  } 	
   
 
 =head1 DESCRIPTION
@@ -235,13 +246,16 @@ Returns a list of account balances (from Relationship Summary page ).
   
 =head2 account
 
-Returns a Finance::Bank::Wachovia::Account object.  This object can be used to 
-get any info available about an account, including posted/available balances, 
-it's name, type, number, and a list of all it's transactions.  See the perldocs for
-Finance::Bank::Wachovia::Account for info on what to do with the object. (or just look at the
-code example in the "How to use" section of this perldoc.
+Returns a Finance::Bank::Wachovia::Account object OR a Finance::Bank::Wachovia::Credit object.  Currently
+the module looks at the length of the account number to decide whether you are retrieving a credit account
+object or a regular (savings/checkings) account object.  Both the Credit and Account classes have some common 
+attributes: name, type, number.  You can use the type to figure out what kind of account you have, OR you can
+just look at the ref() of the object (better, since type can be unclear (like "mbna")).
 
   my $account = $wachovia->account( $account_num );
+
+See L<Finance::Bank::Wachovia::Account> and L<Finance::Bank::Wachovia::Credit> to learn what you can do with the
+returned object.
 
 =head1 WORTH MENTIONING
 
@@ -277,7 +291,7 @@ it under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-L<Finance::Bank::Wachovia::Account>  L<Finance::Bank::Wachovia::Transaction>
+L<Finance::Bank::Wachovia::Account>  L<Finance::Bank::Wachovia::Transaction>  L<Finance::Bank::Wachovia::Credit>
 
 =cut
 

@@ -20,4 +20,23 @@ Revision history for Perl extension Finance::Bank::Wachovia.
         
         [THANKS]
         Jason Marcell for helping me test the user_id/password login
-	and also for helping me debug.
+        and also for helping me debug.
+
+0.03  Tues Dec  12 09:50:50 2004
+
+        [ENHANCEMENTS]
+        * added wachovia_summary.pl to scripts
+        * added Finance::Bank::Wachovia::Credit class
+        * module handles credit accounts properly now
+          
+        [FIXES]
+        * rewrote the argument handling routines in the included scripts to fix some bugs.
+        * fixed parsing bugs for relationship summaries with multiple accounts
+          this affected F::B::W->account_numbers(), account_names(), and account_balances()
+        
+        [DOCUMENTATION]
+        * fixed some typos ("--file" in perldocs for wachovia.pl was supposed to be "--keyfile")
+        
+        [THANKS]
+        Eric Braxton
+	

@@ -4,7 +4,7 @@ use Finance::Bank::Wachovia::ErrorHandler;
 use strict;
 use warnings;
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 our @ISA = qw/Finance::Bank::Wachovia::ErrorHandler/;
 my @attrs;
 
@@ -111,6 +111,6 @@ In my experience 'action' has always been empty, and seq_no I don't know what it
 
 =head1 SEE ALSO
 
-L<Finance::Bank::Wachovia>  L<Finance::Bank::Wachovia::Account>
+L<Finance::Bank::Wachovia>  L<Finance::Bank::Wachovia::Account> L<Finance::Bank::Wachovia::Credit>
 
-=cu
+=cut

@@ -78,6 +78,25 @@ sub get_account_numbers {
 		->get_account_numbers( $self->get_summary_content() );
 }
 
+sub get_credit_account_current_balance {
+	get_account_available_balance( @_ );
+}
+
+sub get_credit_account_available_credit {
+	my $self = shift;
+	return $self->Error( "must pass credit account number" ) unless @_;
+	return Finance::Bank::Wachovia::DataObtainer::WWW::Parser
+		->get_credit_account_available_credit( $self->get_detail_content( @_ ) ); 
+}
+
+sub get_credit_account_limit {
+	my $self = shift;
+	return $self->Error( "must pass credit account number" ) unless @_;
+	return Finance::Bank::Wachovia::DataObtainer::WWW::Parser
+		->get_credit_account_limit( $self->get_detail_content( @_ ) ); 
+
+}
+
 sub get_account_available_balance {
 	my $self = shift;
 	return $self->Error( "must pass account number" ) unless @_;
@@ -93,10 +112,10 @@ sub get_account_name {
 }
 
 sub get_account_type {
-	my($self) = shift;
+	my($self) = shift;	
 	return $self->Error( "must pass account number" ) unless @_;
 	return Finance::Bank::Wachovia::DataObtainer::WWW::Parser
-		->get_account_type( $self->get_detail_content(@_) );	
+		->get_account_type( $self->get_detail_content(@_) );
 }
 
 sub get_account_posted_balance {
@@ -157,11 +176,12 @@ sub get_detail_content {
 	unless( $self->cached_content->{'summary'} ){
 		$self->get_summary_content();	
 	}
+	my $stmt_type = $account_number =~ /^\d{16}$/ ? 'AccountSummary' : 'AccountDetail';
 	my $mech = $self->mech();
 	$mech->form_number( 1 );
 	$mech->field( RelSumAcctSel		=> $account_number );
-	$mech->field( inputName			=> 'AccountDetail' );
-	$mech->field( RelSumStmtType		=> 'AccountDetail' );
+	$mech->field( inputName			=> $stmt_type );
+	$mech->field( RelSumStmtType	=> $stmt_type );
 	$mech->submit();	
 	$self->cached_content->{'details'}->{$account_number} = $mech->content();
 	# return to summary page

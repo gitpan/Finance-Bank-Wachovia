@@ -3,7 +3,7 @@ use Finance::Bank::Wachovia::ErrorHandler;
 use strict;
 use warnings;
 
-our $VERSION = '0.2';
+our $VERSION = '0.3';
 my @attrs;
 our @ISA = qw/Finance::Bank::Wachovia::ErrorHandler/;
 
@@ -187,6 +187,6 @@ alias for get_transactions
 
 =head1 SEE ALSO
 
-L<Finance::Bank::Wachovia>  L<Finance::Bank::Wachovia::Transaction>
+L<Finance::Bank::Wachovia>  L<Finance::Bank::Wachovia::Transaction>  L<Finance::Bank::Wachovia::Credit>
 
 =cut

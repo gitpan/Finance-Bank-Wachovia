@@ -4,11 +4,29 @@ use warnings;
 
 our $VERSION = '0.2';
 
+sub get_credit_account_current_balance {
+	get_account_available_balance( @_ );
+}
+
+sub get_credit_account_available_credit {
+	$_[-1] =~ /<!-- start description insertion -->Available Credit<!-- end description insertion -->/g;
+	my($avail) = $_[-1] =~ /\G.*?<!-- start amount insertion -->\$([\d,.-]+)<!-- end amount insertion -->/s;
+	$avail =~ s/,//g;
+	return $avail; 
+}
+
+sub get_credit_account_limit {
+	$_[-1] =~ /<!-- start description insertion -->Credit Limit<!-- end description insertion -->/g;
+	my($limit) = $_[-1] =~ /\G.*?<!-- start amount insertion -->\$([\d,.-]+)<!-- end amount insertion -->/s;
+	$limit =~ s/,//g;
+	return $limit; 
+}
+
 sub get_account_numbers {
 	my $content = $_[-1];
 	my @nums;
-	for($content =~ m/<!-- begin data row -->/g){
-		my($num) = $content =~ /\G.*?HREF="javascript\:sendForm\('(\d+)','AccountDetail'\)">.*?<\/A>/gs;
+	while( $content =~ m/<!-- begin data row -->/g ){
+		my($num) = $content =~ /\G.*?HREF="javascript\:sendForm\('(\d+)','Account(?:Detail|Summary)'\)">.*?<\/A>/s;
 		push @nums, $num;
 	}
 	return @nums;
@@ -17,8 +35,8 @@ sub get_account_numbers {
 sub get_account_available_balance {
 	my $account_num = $_[-1];
 	my $content = $_[-2];
-	for($content =~ m/<!-- begin data row -->/g){
-		my($num) = $content =~ /\G.*?HREF="javascript\:sendForm\('(\d+)','AccountDetail'\)">.*?<\/A>/gs;
+	while($content =~ m/<!-- begin data row -->/g){
+		my($num) = $content =~ /\G.*?HREF="javascript\:sendForm\('(\d+)','Account(?:Detail|Summary)'\)">.*?<\/A>/s;
 		my $bal;
 		($bal) = $content =~ /\G.*?\$(\-?[\d,.-]+)/s;
 		$bal =~ s/,//g;
@@ -39,8 +57,8 @@ sub get_account_posted_balance {
 sub get_account_name {
 	my $account_num = $_[-1];
 	my $content = $_[-2];
-	for($content =~ m/<!-- begin data row -->/g){
-		my($num,$name) = $content =~ /\G.*?HREF="javascript\:sendForm\('(\d+)','AccountDetail'\)">(.*?)<\/A>/gs;
+	while($content =~ m/<!-- begin data row -->/g){
+		my($num,$name) = $content =~ /\G.*?HREF="javascript\:sendForm\('(\d+)','Account(?:Detail|Summary)'\)">(.*?)<\/A>/s;
 		my $bal;
 		($bal) = $content =~ /\G.*?\$(\-?[\d,.-]+)/s;
 		$bal =~ s/,//g;
