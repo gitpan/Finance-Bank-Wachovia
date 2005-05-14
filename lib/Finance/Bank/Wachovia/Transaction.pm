@@ -4,7 +4,6 @@ use Finance::Bank::Wachovia::ErrorHandler;
 use strict;
 use warnings;
 
-our $VERSION = '0.3';
 our @ISA = qw/Finance::Bank::Wachovia::ErrorHandler/;
 my @attrs;
 

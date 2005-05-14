@@ -1,24 +1,44 @@
 #!/usr/bin/perl
 
 use Finance::Bank::Wachovia;
-use Crypt::CBC;
 use strict;
 $| = 1;
 
-our $VERSION = 0.3;
+our $VERSION = 0.4;
 
 # set option defaults
 my $opts = {
 	keyfile => $ENV{HOME}.'/.wachovia', # file that stores encrypted login info + account number
-	details	=> 1,						# report type: balance|summary|details	
+	details	=> 10,						# report type: balance|summary|details	
 };
+
 # parse command line options -- see perldocs for info
 for (@ARGV){
-	$opts->{lc($1)} = $2 if /--(\w+)=(.+)/g;	
-	$opts->{lc($1)} = 1 if /^--(\w+)$/g;
+	$opts->{lc($1)} = $2 if /--([\w-]+)=(.+)/g;	
+	$opts->{lc($1)} = 1 if /^--([\w-]+)$/g;
 }  
 
+# Since I can never remember myself which one of these it is, then 
+# why not make them all valid?
+my $userid;
+my $password;
+$opts->{user_id} = $userid if( $userid = $opts->{userid} 
+	|| $opts->{user_id}
+	|| $opts->{user}
+	|| $opts->{login}
+	|| $opts->{'user-id'}
+	|| $opts->{id}
+	|| $opts->{name}
+	);
+	
+$opts->{password} = $password if( $password = $opts->{password}
+	|| $opts->{pass}
+	|| $opts->{pw}
+	);
+
+
 if( $opts->{key} ){
+	# indicates we are storing/retrieving data from keyfile
 	eval {
 		require Crypt::CBC;
 		import Crypt::CBC;
@@ -37,15 +57,18 @@ if( $opts->{key} ){
 else{
 	# if here, then the user must provide all the info them self, and they don't plan on keeping it
 	# in a key-file.
-	unless( ( $opts->{can} && $opts->{pin} && $opts->{codeword} ) || ( $opts->{userid} && $opts->{password} ) ){
+	unless( ( $opts->{can} && $opts->{pin} && $opts->{codeword} ) || ( $opts->{user_id} && $opts->{password} ) ){
 		print "Need either login info, or file-key to login.  see `perldoc wachovia.pl`\n";	
 		exit(1);
 	}	
 }
 my $x;
 
-my %login_info = $opts->{userid}
-	? ( user_id => $opts->{userid}, password => $opts->{password} )
+die "Must provide account number, see perldocs for $0 to learn more."
+	unless $opts->{account};
+
+my %login_info = $opts->{user_id}
+	? ( user_id => $opts->{user_id}, password => $opts->{password} )
 	: ( customer_access_number => $opts->{can}, pin => $opts->{pin}, code_word => $opts->{codeword} );
 	
 my $wachovia  = Finance::Bank::Wachovia->new( %login_info ) 
@@ -74,7 +97,9 @@ write;
 print <<EOF;
 =====  ================================================= =========== =========== ===========
 EOF
-foreach my $t ( (reverse @$transactions)[0..10] ){
+my $end = @$transactions < $opts->{details} ? $#{$transactions} : $opts->{details};
+$end = $#{$transactions} if $end eq 'all';
+foreach my $t ( (reverse @$transactions)[0..$end] ){
 	$date		= substr $t->date, 0, 5;
 	$desc		= $t->description;
 	$with		= $t->withdrawal_amount ? $t->withdrawal_amount : '';
@@ -190,7 +215,8 @@ Flag that tells program to just print out the available balance and exit. (has n
 
 =head2 --details
 
-Flag that tells program to display extra information (last 10 transactions).
+Flag that tells program how many transactions to display, default is 10.  You can ask for more than there are to display, and
+it will just display all it has.  Or, you can say --details=all to display all of them.
 
 =head2 --can
 

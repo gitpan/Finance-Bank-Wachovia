@@ -2,8 +2,6 @@ package Finance::Bank::Wachovia::DataObtainer::WWW::Parser;
 use strict;
 use warnings;
 
-our $VERSION = '0.2';
-
 sub get_credit_account_current_balance {
 	get_account_available_balance( @_ );
 }

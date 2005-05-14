@@ -40,3 +40,22 @@ Revision history for Perl extension Finance::Bank::Wachovia.
         [THANKS]
         Eric Braxton
 	
+0.04  Sat May  14  14:54:32 2005
+
+		[ENHANCEMENTS]
+		* made wachovia.pl and wachovia_summary.pl accept variations of their arguments
+		  so you can use --user --userid --user-id --user_id --login, and it's all the same.
+		* wachovia.pl script: usefulness of --details argument has been augmented.  Now you can
+		  specify how many transactions you want displayed, including: --details=all
+		
+		[FIXES]
+		* made the warning about form name go away.  This started popping up when wachovia 
+		  changed their website.
+		* removed VERSIONS from all the other module files, the only one that really matters
+		  is Wachovia.pm, and remembering to change the others was a PITA.
+		  
+		[DOCUMENTATION]
+		* changed wachovia.pl docs to reflect change in --details argument
+		
+		[THANKS]
+		Clint and Jason for hitting me with the emails.

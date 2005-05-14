@@ -1,11 +1,10 @@
 #!/usr/bin/perl
 
 use Finance::Bank::Wachovia;
-use Crypt::CBC;
 use strict;
 $| = 1;
 
-our $VERSION = 0.3;
+our $VERSION = 0.4;
 
 # set option defaults
 my $opts = {
@@ -17,6 +16,24 @@ for (@ARGV){
 	$opts->{lc($1)} = $2 if /--(\w+)=(.+)/g;	
 	$opts->{lc($1)} = 1 if /^--(\w+)$/g;
 }  
+
+# Since I can never remember myself which one of these it is, then 
+# why not make them all valid?
+my $userid;
+my $password;
+$opts->{user_id} = $userid if( $userid = $opts->{userid} 
+	|| $opts->{user_id}
+	|| $opts->{user}
+	|| $opts->{login}
+	|| $opts->{'user-id'}
+	|| $opts->{id}
+	|| $opts->{name}
+	);
+	
+$opts->{password} = $password if( $password = $opts->{password}
+	|| $opts->{pass}
+	|| $opts->{pw}
+	);
 
 if( $opts->{key} ){
 	eval {
@@ -52,6 +69,9 @@ my $wachovia  = Finance::Bank::Wachovia->new( %login_info )
 	or die Finance::Bank::Wachovia->ErrStr;
 
 my @account_nums = $wachovia->account_numbers();
+
+die $wachovia->ErrStr()
+	if $wachovia->ErrStr;
 
 my($num, $name, $type, $bal) = qw/Number Name Type Balance/;
 format Summary = 

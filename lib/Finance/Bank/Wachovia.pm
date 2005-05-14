@@ -8,7 +8,7 @@ use Finance::Bank::Wachovia::DataObtainer::WWW;
 use strict;
 use warnings;
 
-our $VERSION = '0.3';
+our $VERSION = '0.4';
 my @attrs;
 our @ISA = qw/Finance::Bank::Wachovia::ErrorHandler/;
 
@@ -87,6 +87,8 @@ sub account_balances {
 
 sub account {
 	my($self, $account_number) = @_;	
+	return $self->Error("Must pass account number to account() method") 
+		unless $account_number;
 	if( exists $self->accounts->{$account_number} ){
 		return $self->accounts->{$account_number};
 	}
@@ -275,6 +277,14 @@ Thanks to Jason Marcell for helping me test/debug the user_id/password login in 
 =over 1
 
 =item * finish documentation
+
+=item * handle rejected logins with elegance, right now you just kind of guess something went wrong when you don't see what you expected to see.
+
+=item * work errorhandling into each of the methods
+
+Really, I want to redo the errorhandling.  I hate the uppercase method names too.  WHY did I do that?
+
+=item * re-write the dataobtaining stuff so it's more elegant, say, by a factor of 10
 
 =item * add in fancy stuff like transfers and billpay -- maybe
 

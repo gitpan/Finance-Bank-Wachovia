@@ -7,7 +7,6 @@ use Finance::Bank::Wachovia::ErrorHandler;
 use strict;
 use warnings;
 
-our $VERSION = '0.2';
 my $DEBUG = 1 if "@ARGV" =~ /--www-debug/;
 my $CONFIRM_LOGIN = 1 if "@ARGV" =~ /--www-confirm/;
 my @attrs;
@@ -145,8 +144,10 @@ sub get_summary_content {
 		return $self->cached_content->{'summary'};
 	}
 	if( ! $self->logged_in ){
-		$self->login;	
-		return $self->get_summary_content();
+		$self->login
+			or return $self->Error( $self->ErrStr );	
+		return $self->get_summary_content()
+			or return $self->Error( $self->ErrStr );
 	}
 	my $mech = $self->mech();
 	$mech->form_number( 1 );
@@ -266,19 +267,21 @@ sub login {
 		"============ BEGIN CONTENT ===============\n",
 		$mech->content(), "\n",
 		"============ END CONTENT =================\n" if $DEBUG;
-
+		if( $mech->content() =~ /ASV\-201/ ){
+			return $self->Error("Login failed, bad username/password (too many of these will lock your account)");
+		}
 
 	# after the initial commit, there is what appears to be a bunch of redirects. While there are some, there are
 	# also some javascript onLoad submits.  The following code emulates that behavior (just submits a form that 
 	# has a bunch of hidden inputs )
-	$mech->form_name( 'authForm' );
+	$mech->form_number( 1 );
 	$mech->submit();
 	print STDERR "Login (4) Content:\n",
 		"============ BEGIN CONTENT ===============\n",
 		$mech->content(), "\n",
 		"============ END CONTENT =================\n" if $DEBUG;
 
-	$mech->form_name( 'autoposterForm' );
+	$mech->form_number( 1 );
 	$mech->submit();
 	print STDERR "Login (5) Content:\n",
 		"============ BEGIN CONTENT ===============\n",

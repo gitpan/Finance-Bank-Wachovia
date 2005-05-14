@@ -2,7 +2,6 @@ package Finance::Bank::Wachovia::ErrorHandler;
 use strict;
 use warnings;
 
-our $VERSION = '0.1';
 our $ERROR;
 our @ATTRIBUTES = qw/message/;  # just for those that inherit 
 
