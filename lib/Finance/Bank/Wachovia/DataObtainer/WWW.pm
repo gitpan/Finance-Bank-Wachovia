@@ -219,7 +219,7 @@ sub login {
 	$mech->cookie_jar(HTTP::Cookies->new());	# have to turn on cookies manually apparently
 	$mech->agent_alias( 'Mac Safari' );			# don't want the bank to know we are geniuses, (using perl) 
 												# but we don't want them thinking we are dumb either (using MSIE).
-												# considering changing this to Firefox (mozilla), as a practice in trivialness
+												# considering changing this to Firefox (mozilla), as an exercise in pointlessness.
 
 	# make first contact
 	# TODO: add in success checking
@@ -281,12 +281,13 @@ sub login {
 		$mech->content(), "\n",
 		"============ END CONTENT =================\n" if $DEBUG;
 
-	$mech->form_number( 1 );
-	$mech->submit();
-	print STDERR "Login (5) Content:\n",
-		"============ BEGIN CONTENT ===============\n",
-		$mech->content(), "\n",
-		"============ END CONTENT =================\n" if $DEBUG;
+	# removed due to wachovia website change on 1/22
+	#	$mech->form_number( 1 );
+	#	$mech->submit();
+	#	print STDERR "Login (5) Content:\n",
+	#		"============ BEGIN CONTENT ===============\n",
+	#		$mech->content(), "\n",
+	#		"============ END CONTENT =================\n" if $DEBUG;
 
 	
 	$self->cached_content->{'summary'} = $mech->content();

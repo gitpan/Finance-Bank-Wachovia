@@ -10,6 +10,8 @@ NAME
        * Account transaction data (in all their detailed glory)
 
        Does not (yet) provide any means to transfer money or pay bills.
+       (Note - I don't think this will ever happen unless Wachovia creates and 
+       documents a secure web service.)
 
 SYNOPSIS
        Since this version uses the website to get account info, it will need
@@ -95,5 +97,5 @@ COPYRIGHT AND LICENCE
 Copyright (C) 2004 Jim Garvin
 
 This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself. 
+it under the same terms as Perl itself.
 

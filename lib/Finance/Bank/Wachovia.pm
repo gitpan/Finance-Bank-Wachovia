@@ -8,7 +8,7 @@ use Finance::Bank::Wachovia::DataObtainer::WWW;
 use strict;
 use warnings;
 
-our $VERSION = '0.4';
+our $VERSION = '0.5';
 my @attrs;
 our @ISA = qw/Finance::Bank::Wachovia::ErrorHandler/;
 

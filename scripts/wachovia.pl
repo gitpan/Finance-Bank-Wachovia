@@ -248,7 +248,8 @@ Larry Wall for Perl.
 
 Doug Feuerbach for so many things, but for this instance of thankfulness: the encryption/decryption routines.
 
-Jason Marcell for his help testing/debugging the user_id/password login method.
+Jason Marcell for his help testing/debugging the user_id/password login method, and for being a dedicated
+user that's the first person to let me know when Wachovia changes their website.
 
 =head1 AUTHOR
 
